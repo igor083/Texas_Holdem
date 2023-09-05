@@ -16,3 +16,14 @@
   align-items: center;
   justify-content: center;
 }
+
+button {
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+

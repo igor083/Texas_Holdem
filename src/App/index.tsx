@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Player, PlayerType } from "../components/Player";
 import styles from "./style.module.scss";
+import { tableSize } from "../helpers/configs";
 
 
 export function App() {
@@ -8,27 +9,46 @@ export function App() {
 
    useEffect(() => {
       setPlayers([
-         {name: "usuario 1"},
-         {name: "usuario 2"},
-         {name: "usuario 3"},
-         {name: "usuario 4"}
       ]);
    }, []);
 
+   function createPlayer(name?: string) {
+      if (!name) {
+         const response = window.prompt("Qual o nome? ")
 
-   useEffect(() => {
-      if (players.length > 7) {
-         alert("O números maximo de players foi atingido");
+         if (response) name = response;
+         else return;
       }
-   }, [players]);
+
+      if (players.length >= 7) {
+         alert("O números maximo de players foi atingido");
+         
+      } else {
+         setPlayers([ 
+            ...players, 
+            {
+               name,
+               tablePos: players.length + 1
+            }
+         ]);
+      }
+   }
 
    return (
-      <div className={styles.table}>
+      <div className={styles.table} style={{...tableSize}}>
          <img src={"/images/table.png"} />
 
-         {
-            players.map(player => <Player {...player} />)
-         }
+         <div className={styles.gameContainer}>
+            <button 
+               onClick={() => createPlayer()}
+               className={styles.createPlayerButton}
+            >
+               Criar player</button>
+
+            {
+               players.map(player => <Player {...player} />)
+            }
+         </div>
       </div>
    )
 }

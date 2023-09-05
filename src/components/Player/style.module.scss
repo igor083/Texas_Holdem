@@ -1,15 +1,13 @@
-.playerContainer {
-  width: 100px;
-  height: 100px;
+.player {
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
 
   border: solid 4px black;
   color: white;
-  
+
   display: flex;
   align-items: center;
   justify-content: center;
 
-  position: inherit;
+  position: absolute;
 }
