@@ -1,4 +1,6 @@
-import Card from "../components/Card";
+import { CardType } from "../components/Card";
+
+
 
 export enum Suit {
    copas = "copas",
@@ -7,47 +9,43 @@ export enum Suit {
    espadas = "espadas",
 }
 
-export enum Rank {
-   Ace = "1",
-   Two = "2",
-   Three = '3',
-   Four = '4',
-   Five = '5',
-   Six = '6',
-   Seven = '7',
-   Eight = '8',
-   Nine = '9',
-   Ten = '10',
-   Jack = '11',
-   Queen = '12',
-   King = '13',
-}
-
-// Defina uma interface para representar uma carta
-export interface Card {
-   suit: Suit;
-   rank: Rank;
+export const Rank = {
+   Ace: 1,
+   Two: 2,
+   Three: 3,
+   Four: 4,
+   Five: 5,
+   Six: 6,
+   Seven: 7,
+   Eight: 8,
+   Nine: 9,
+   Ten: 10,
+   Jack: 11,
+   Queen: 12,
+   King: 13
 }
 
 // Função para criar um baralho completo
-export function createDeck(): Card[] {
-   const deck: Card[] = [];
+export function createDeck(): CardType[] {
+   const deck: CardType[] = [];
  
    
    const suits = Object.values(Suit);
    const ranks = Object.values(Rank);
+
+   console.log("ranks: ", ranks)
  
    for (const suit of suits) {
-     for (const rank of ranks) {
-       deck.push({ suit, rank });
-     }
+      for (const rank of ranks) {
+         deck.push({ suit, rank });
+      }
    }
  
    return deck;
  }
 
 // Função para distribuir aleatoriamente duas cartas do deck e removê-las
-export function dealTwoCards(deck: Card[]): [Card, Card] {
+export function dealTwoCards(deck: CardType[]): CardType[] {
 
    const firstIndex = Math.floor(Math.random() * deck.length);
    let secondIndex = Math.floor(Math.random() * deck.length);
@@ -62,8 +60,8 @@ export function dealTwoCards(deck: Card[]): [Card, Card] {
 
    return [card1, card2];
 }
-export function dealCommunityCards(deck: Card[], numberOfCards: number): Card[] {
-   const communityCards: Card[] = [];
+export function dealCommunityCards(deck: CardType[], numberOfCards: number): CardType[] {
+   const communityCards: CardType[] = [];
 
    for (let i = 0; i < numberOfCards; i++) {
       const randomIndex = Math.floor(Math.random() * deck.length);

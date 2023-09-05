@@ -1,16 +1,17 @@
-import Card from './components/Card';
-import Player from './components/Player';
-import { createDeck, dealTwoCards, dealCommunityCards } from "./helpers/BaralhoDealer";
-const players = [
-   {
-      name: 'Player 1',
-      pot: 100,
-      cards: [],
-   }
-]
+import { Player } from './components/Player';
+import { createDeck, dealTwoCards } from "./helpers/BaralhoDealer";
+
+// const players = [
+//    {
+//       name: 'Player 1',
+//       pot: 100,
+//       cards: [],
+//    }
+// ]
 
 const App = () => {
-   var baralho = createDeck();
+   const baralho = createDeck();
+   
    return (
       <>
          <div>
