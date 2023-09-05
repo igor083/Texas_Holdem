@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-// Defina o tipo das props do componente
 type CardProps = {
    suit: string; // naipe
    rank: number; // numero ou nome

@@ -32,30 +32,26 @@ export interface Card {
 // Função para criar um baralho completo
 export function createDeck(): Card[] {
    const deck: Card[] = [];
-
-   // Usamos Object.values para obter todas as chaves do enum Suit
+ 
+   
    const suits = Object.values(Suit);
    const ranks = Object.values(Rank);
-
+ 
    for (const suit of suits) {
-      for (const rank of ranks) {
-         deck.push({ suit, rank });
-      }
+     for (const rank of ranks) {
+       deck.push({ suit, rank });
+     }
    }
-
+ 
    return deck;
-}
-
-const fullDeck = createDeck();
-console.log(fullDeck);
+ }
 
 // Função para distribuir aleatoriamente duas cartas do deck e removê-las
 export function dealTwoCards(deck: Card[]): [Card, Card] {
 
    const firstIndex = Math.floor(Math.random() * deck.length);
    let secondIndex = Math.floor(Math.random() * deck.length);
-
-   // Garanta que o segundo índice seja diferente do primeiro
+   
    while (secondIndex === firstIndex) {
       secondIndex = Math.floor(Math.random() * deck.length);
    }
@@ -74,6 +70,6 @@ export function dealCommunityCards(deck: Card[], numberOfCards: number): Card[] 
       const [communityCard] = deck.splice(randomIndex, 1);
       communityCards.push(communityCard);
    }
-   console.log(communityCards);
+  
    return communityCards;
 }

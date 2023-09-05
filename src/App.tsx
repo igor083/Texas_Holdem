@@ -11,9 +11,6 @@ const players = [
 
 const App = () => {
    var baralho = createDeck();
-
-   dealCommunityCards(baralho, 5);
-
    return (
       <>
          <div>
@@ -28,24 +25,3 @@ const App = () => {
 
 
 export default App;
- /*
-if (dealCards !== null) {
-   [cardA,cardB] = dealCards; // Assign cardA here
-   console.log("Carta A:", cardA);
-   console.log("Carta B:", cardB);
-   console.log("Deck restante:", baralho);
- } else {
-   console.log("Não há cartas suficientes para distribuir duas cartas.");
- }
- 
- if (cardA && cardB) {
-    return (
-      <div>
-        <Card suit={cardA.suit} rank={cardA.rank} />
-        <Card suit={cardB.suit} rank={cardB.rank} />
-      </div>
-    );
-  } else {
-    return <p>Não há cartas suficientes para renderizar.</p>;
-  }
-};*/

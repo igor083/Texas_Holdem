@@ -1,5 +1,5 @@
 import Card from './Card';
-import { Suit, Rank, createDeck, dealTwoCards } from "../helpers/BaralhoDealer";
+
 
 
 type Card = {
@@ -13,12 +13,11 @@ interface PlayerProps {
 }
 
 const Player: React.FC<PlayerProps> = ({ name, pot, cards }) => {
-   const play = () => {
-      console.log(`${name} is playing.`);
-      // Lógica para as ações do jogador durante o turno
-   };
+   //logica para o jogador
+
 
    return (
+
       <div>
          <h2>{name}</h2>
          <p>Pot: {pot}</p>
