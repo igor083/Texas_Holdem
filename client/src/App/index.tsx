@@ -29,7 +29,7 @@ export function App() {
 
   return (
     <div className={styles.table} style={{...tableSize}}>
-      <img src={"/images/table.png"} />
+      <img className={styles.tableImage} src={"/images/table.png"} />
 
       <div className={styles.gameContainer}>
         <button 
@@ -42,6 +42,12 @@ export function App() {
         {
           players.map(player => <Player {...player} />)
         }
+
+        <div className={styles.communityCards}>
+          {
+            [1, 2, 3, 4, 5].map(item => <img src={"/images/card-model.png"} />)
+          }
+        </div>
       </div>
     </div>
   )
