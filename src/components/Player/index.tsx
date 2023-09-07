@@ -1,67 +1,62 @@
 import styles from "./style.module.scss";
-import { tableSize, playerSize } from "../../helpers/configs";
+import { playerSize } from "../../helpers/configs";
 
 
 export interface PlayerType {
   name: string;
-  tablePos: number;
+  position: {
+    x: number,
+    y: number
+  };
 }
 
-export function Player({ name, tablePos }: PlayerType) {
+export function Player({ name, position }: PlayerType) {
   //logica para o jogador
 
-  function getTablePosition() {
-    const stylePos: React.CSSProperties = {}
-
-    switch (tablePos) {
-      case 1:
-        stylePos.top = "0px";
-        break;
-      
-      case 2:
-        stylePos.top = (tableSize.height/2 - playerSize.height/2) + "px";
-        stylePos.left = -playerSize.width/2 + "px";
-        break;
-
-      case 3:
-        stylePos.top = (tableSize.height - playerSize.height) + "px"; 
-        break;
-      
-      case 4:
-        stylePos.top = (tableSize.height - playerSize.height/1.5) + "px";
-        stylePos.left = (tableSize.width/3 + playerSize.width/2) + "px";
-        break;
-      
-      case 5:
-        stylePos.top = (tableSize.height - playerSize.height) + "px";
-        stylePos.left = (tableSize.width - playerSize.width) + "px";
-        break;
-
-      case 6:
-        stylePos.top = (tableSize.height/2 - playerSize.height/2) + "px";
-        stylePos.left = (tableSize.width - playerSize.width + playerSize.width/2) + "px";
-        break;
-
-      case 7:
-        stylePos.top = "0px";
-        stylePos.left = (tableSize.width - playerSize.width) + "px";
-        break;
-    }
-
-
-    return stylePos;
-  }
 
   return (
     <div 
       className={styles.player}
       style={{
-        ...getTablePosition(), 
         width: playerSize.width+"px",
-        height: playerSize.height+"px"
+        height: playerSize.height+"px",
+        
+        left: position.x+"px",
+        top: position.y+"px",
+
       }}
     >
-      {name}
+      <img className={styles.playerImage} src={"/images/player.png"} />
+      <div className={styles.betAmount}>R$200</div>
+
+      <div className={styles.name}>{name}</div>
+      
+      {
+        [1, 2, 3, 4].map(e => {
+          e = e < 2 ? -e : e-1;
+
+          return (
+            <img 
+              style={{
+                left: 30*e+"px", bottom: "-40px", 
+                position: "absolute", width: "30px", height: "auto",
+                zIndex: 1
+              }} 
+              src={"/images/back-card.png"} 
+            />
+          )
+        })
+      }
+      <img 
+        style={{
+          left: 0+"px", bottom: "-40px", 
+          position: "absolute", width: "30px", height: "auto",
+          zIndex: 1
+        }} 
+        src={"/images/back-card.png"} 
+      />
+      
+      
     </div>
   );
 }

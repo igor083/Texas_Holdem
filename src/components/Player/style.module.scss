@@ -1,13 +1,58 @@
 .player {
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.5);
 
-  border: solid 4px black;
+  border: solid 4px #35363A;
   color: white;
 
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 
   position: absolute;
+
+  background: 
+    radial-gradient(ellipse farthest-corner at right bottom, #FEDB37 0%, #FDB931 8%, #9f7928 30%, #8A6E2F 40%, transparent 80%),
+    radial-gradient(ellipse farthest-corner at left top, #FFFFFF 0%, #FFFFAC 8%, #D1B464 25%, #5d4a1f 62.5%, #5d4a1f 100%);
+
+
+  .playerImage {
+    width: 100%;
+    height: 100%;
+  }
+
+  .betAmount {
+    text-align: left;
+    width: 100%;
+    background-color: #603813;
+    width: min-content;
+    align-self: flex-start;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.35rem;
+    border: solid 3px #8C6239;
+    position: relative;
+    top: -5%;
+    left: -5%;
+  }
+
+  .name {
+    background: 
+      radial-gradient(ellipse farthest-corner at right bottom, #FEDB37 0%, #FDB931 8%, #9f7928 30%, #8A6E2F 40%, transparent 80%),
+      radial-gradient(ellipse farthest-corner at left top, #FFFFFF 0%, #FFFFAC 8%, #D1B464 25%, #5d4a1f 62.5%, #5d4a1f 100%);
+
+    border: solid 3px #35363A;
+
+    width: 100%;
+    padding: 0.25rem 0.3rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    position: relative;
+    bottom: -10%;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    z-index: 2;
+  }
 }
