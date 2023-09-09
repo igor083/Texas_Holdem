@@ -1,0 +1,42 @@
+.modalContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .bgBlur {
+    background-color: rgb(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: 98;
+  }
+
+  .content {
+    width: 28rem;
+    height: 28rem;
+    background-color: white;
+    z-index: 99;
+    position: absolute;
+
+    border-radius: 1rem;
+
+    // .closeIcon {
+    //   position: absolute;
+    //   right: 1rem;
+    //   top: 1rem;
+    //   transition: 300ms;
+    //   cursor: pointer;
+
+    //   &:hover {
+    //     transform: scale(1.1);
+    //   }
+    // }
+  }
+}

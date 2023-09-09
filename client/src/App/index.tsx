@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Player, PlayerType } from "../components/Player";
 import styles from "./style.module.scss";
 import { tableSize, getPlayerPosition } from "../helpers/configs";
+import { io } from "socket.io-client";
+import { MainModal } from "../components/MainModal";
 
 
 export function App() {
   const [players, setPlayers] = useState<PlayerType[]>([]);
-
 
   function createPlayer(name?: string) {
     if (!name) {
@@ -27,29 +28,38 @@ export function App() {
     }
   }
 
+  useEffect(() => {
+    // const socket = io("http://localhost:8080");
+
+    
+  }, []);
+
   return (
-    <div className={styles.table} style={{...tableSize}}>
-      <img className={styles.tableImage} src={"/images/table.png"} />
+    <>
+      <MainModal />
+      <div className={styles.table} style={{...tableSize}}>
+        <img className={styles.tableImage} src={"/images/table.png"} />
 
-      <div className={styles.gameContainer}>
-        <button 
-          onClick={() => createPlayer()}
-          className={styles.createPlayerButton}
-        >
-          Criar player
-        </button>
+        <div className={styles.gameContainer}>
+          <button 
+            onClick={() => createPlayer()}
+            className={styles.createPlayerButton}
+          >
+            Criar player
+          </button>
 
-        {
-          players.map(player => <Player {...player} />)
-        }
-
-        <div className={styles.communityCards}>
           {
-            [1, 2, 3, 4, 5].map(item => <img src={"/images/card-model.png"} />)
+            players.map(player => <Player {...player} />)
           }
+
+          <div className={styles.communityCards}>
+            {
+              [1, 2, 3, 4, 5].map(i => <img key={i} src={"/images/card-model.png"} />)
+            }
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
