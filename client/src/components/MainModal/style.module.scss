@@ -39,4 +39,10 @@
     //   }
     // }
   }
+
+  .isWaitingContent {
+    z-index: 99;
+    position: absolute;
+    
+  }
 }

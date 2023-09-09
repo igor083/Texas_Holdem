@@ -1,35 +1,73 @@
-import styles from "./style.module.scss";
-import { useSocket } from "../../hooks/useSocket";
+import { Room, useSocket } from "../../hooks/useSocket";
 import { useState } from "react";
+import { Modal, Select, Typography, Button, Divider, Spin, Input } from "antd";
 
-import { X } from "lucide-react";
-
+const { Text } = Typography;
 
 export function MainModal() {
-  const { rooms } = useSocket();
-  const [selectedRoom, setSelectedRoom] = useState<string>();
+  const { rooms, setRooms, isSocketLoading } = useSocket();
+  const [isWaiting, setIsWaiting] = useState<boolean>(false);
 
-  function handleChangeRoom(element: React.ChangeEvent<HTMLSelectElement>) {
-    setSelectedRoom(element.target.value)
+  function handleChangeRoom(room: Room) {
+    setRooms({ ...rooms, selectedRoom: room });
+  }
+
+  function handleEnterOnGame() {
+    setIsWaiting(true);
   }
 
   return (
-    <div className={styles.modalContainer}>
-      <div className={styles.bgBlur}></div>
+    <>
+      <Modal
+        title={"🎲 Poker Online"}
+        open={!isWaiting}
+        closable={false}
+        centered={true}
+        footer={() => rooms.selectedRoom?.gameStarted
+          ? <Text>Essa partida ja iniciou</Text>
+          : <Button type={"primary"} onClick={handleEnterOnGame}>Entrar na Sala</Button>
+        }
+      >
+        <Text>Selecione uma sala</Text>
 
-      <div className={styles.content}>
-        {/* <X className={styles.closeIcon}/> */}
+        <Select
+          loading={isSocketLoading}
+          value={rooms.selectedRoom?.id}
+          onChange={(_, room: Room) => handleChangeRoom(room)}
+          options={rooms.rooms.map(room =>
+            ({
+              ...room,
+              name: `${room.name} - ${room.gameStarted ? "Partida em andamento" : ""} 🎮(${room.playersCount}/7)`
+            })
+          )}
+          style={{width: "100%"}}
+          fieldNames={{label: "name", value: "id"}}
+          dropdownRender={(defaultMenu) => (
+            <>
+              {defaultMenu}
 
-        <select onChange={handleChangeRoom} value={selectedRoom}>
-          <option selected disabled>Selecione um server</option>
-          {
-            rooms.map(room => 
-              <option key={room.id}>{room.name}</option>)
-          }
-        </select>
+              <Divider style={{margin: "8px 0px"}} />
 
-        <button>Entrar no jogo</button>
-      </div>
-    </div>
+              <div style={{display: "flex", gap: "8px", margin: "6px"}}>
+                <Input style={{width: "100%"}} placeholder="Digite o nome da nova sala" />
+                <Button type="primary">Criar nova sala</Button>
+              </div>
+            </>
+          )}
+        />
+
+        <div style={{marginTop: "0.75rem"}}>
+          <Text>Nome de usuário</Text>
+          <Input placeholder="Digite um nome qualquer" />
+        </div>
+
+      </Modal>
+
+      <Modal
+        open={isWaiting}
+      >
+        <Spin size="large"/>
+      </Modal>
+    </>
   )
 }

@@ -15,12 +15,16 @@ const fakeRooms: Room[] = [
   {
     id: "2323232",
     name: "server 1",
-    playersCount: 20
+    playersCount: 20,
+    ownerId: 1,
+    gameStarted: true
   },
   {
     id: "18181818",
     name: "server 2",
-    playersCount: 10
+    playersCount: 10,
+    ownerId: 2,
+    gameStarted: false
   }
 ]
 
@@ -39,7 +43,6 @@ io.on("connection", socket => {
 
 app.get("/get-rooms", (request, response) => {
   try {
-    throw "ola";
     return response.json(fakeRooms);
 
   } catch(e) {
