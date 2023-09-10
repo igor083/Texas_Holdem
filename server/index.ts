@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import { Room } from "./src/types/Room";
+import { Player, Room } from "./src/types/Types";
 
 const app = express();
 const httpServer = createServer(app);
@@ -11,22 +11,17 @@ const io = new Server(
   {cors: { origin: "*" }}
 );
 
-const fakeRooms: Room[] = [
+const rooms: Room[] = [
   {
-    id: "2323232",
+    id: "serv112121221",
     name: "server 1",
-    playersCount: 20,
-    ownerId: 1,
-    gameStarted: true
-  },
-  {
-    id: "18181818",
-    name: "server 2",
-    playersCount: 10,
-    ownerId: 2,
+    players: [],
+    ownerId: "1",
     gameStarted: false
   }
 ]
+
+const players: Player[] = []
 
 
 app.use(cors({
@@ -35,15 +30,36 @@ app.use(cors({
 
 io.on("connection", socket => {
   console.log("Conected!");
+  
+  socket.on("enter-room", (roomId, callback) => {
+    for (let i = 0; i < rooms.length; i++) {
+      if (rooms[i].id === roomId) {        
+        const player = players.find(p => p.id === socket.id);
 
-  socket.on("get-rooms", () => {
+        if (player) {
 
-  })
+          if (rooms[i].players.length === 0)
+            rooms[i].ownerId = player.id;
+
+          socket.join(roomId);
+          io.to(roomId).emit("new-player", player);
+          rooms[i].players.push(player);
+        }
+      }
+    }
+
+    callback(rooms);
+  });
+
+
+  socket.on("new-player", (player: Player) => {
+    players.push(player);
+  });
 });
 
 app.get("/get-rooms", (request, response) => {
   try {
-    return response.json(fakeRooms);
+    return response.json(rooms);
 
   } catch(e) {
     return response.status(500).json({error: "Erro ao buscar salas"})

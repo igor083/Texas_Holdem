@@ -1,25 +1,25 @@
-import { useContext, createContext, useState, ReactNode, useEffect } from "react";
+import { useRef, useContext, createContext, useState, ReactNode, useEffect } from "react";
 import { api } from "../services/api";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import { Socket, io } from "socket.io-client";
+import { Player } from "../components/MainModal";
 
 interface ContextProviderType {
-  rooms: RoomProviderValue;
-  setRooms(rooms: RoomProviderValue): void;
+  rooms: Room[];
+  setRooms(rooms: Room[]): void;
   isSocketLoading: boolean;
   setIsSocketLoading(newValue: boolean): void;
-}
-
-interface RoomProviderValue {
-  selectedRoom: null | Room;
-  rooms: Room[];
+  socketConnection: Socket | null;
+  players: Player[];
+  setPlayers(players: Player[]): void;
 }
 
 export interface Room {
   id: string;
   name: string;
-  playersCount: number;
-  ownerId: number;
+  players: Player[];
+  ownerId: string;
   gameStarted: boolean;
 }
 
@@ -28,22 +28,19 @@ const SocketContext = createContext({} as ContextProviderType);
 
 
 export function SocketProvider({ children }: {children: ReactNode}) {
-  const [rooms, setRooms] = useState<RoomProviderValue>({
-    selectedRoom: null,
-    rooms: []
-  });
-  const [isSocketLoading, setIsSocketLoading] = useState<boolean>(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
-  async function updateRooms(initialUpdate: boolean = false) {
-    setIsSocketLoading(true);
+  const [isSocketLoading, setIsSocketLoading] = useState<boolean>(false);
+  const socketRef = useRef<Socket | null>(null);
+
+
+  async function updateRooms() {
     try {
       const response = await api.get("/get-rooms");
 
       if (response.status < 400) {
-        setRooms({ 
-          rooms: response.data, 
-          selectedRoom: initialUpdate ? response.data[0] : rooms.selectedRoom
-        });
+        setRooms(response.data);
       } else {
         throw new AxiosError;
       }
@@ -55,18 +52,42 @@ export function SocketProvider({ children }: {children: ReactNode}) {
         toast.error("Ocorreu um erro desconhecido ao buscar salas.")
       }
     }
-    setIsSocketLoading(false);
   }
 
+  // function sleep(ms: number) {
+  //   return new Promise(resolve => setTimeout(resolve, ms));
+  // }
+
   useEffect(() => {
-    // initial update
-    updateRooms(true);
+    const socket = io("http://localhost:8080");
+    setIsSocketLoading(true);
+
+    socket.on("connect", async () => {
+      console.log("Connected! ", socket.id)
+      setIsSocketLoading(false);
+
+      socketRef.current = socket;
+    });
+
+    socket.on("new-player", (player: Player, roomId: string) => {
+      setRooms(rooms.map(room => 
+        room.id == roomId 
+          ? {
+            ...room,
+            players: [...room.players, player]
+          } : room
+      ));
+    });
+
+    updateRooms();
   }, []);
 
   return (
     <SocketContext.Provider value={{
       isSocketLoading, setIsSocketLoading,
-      rooms, setRooms
+      rooms, setRooms,
+      socketConnection: socketRef.current,
+      players, setPlayers
     }}>
       {children}
     </SocketContext.Provider>

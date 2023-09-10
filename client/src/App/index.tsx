@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Player, PlayerType } from "../components/Player";
 import styles from "./style.module.scss";
 import { tableSize, getPlayerPosition } from "../helpers/configs";
-import { io } from "socket.io-client";
 import { MainModal } from "../components/MainModal";
 
 
@@ -27,12 +26,6 @@ export function App() {
       ]);
     }
   }
-
-  useEffect(() => {
-    // const socket = io("http://localhost:8080");
-
-    
-  }, []);
 
   return (
     <>

@@ -2,7 +2,8 @@ import styles from "./style.module.scss";
 import { playerSize } from "../../helpers/configs";
 
 
-export interface PlayerType {
+export interface Player {
+  id: string;
   name: string;
   position: {
     x: number,
@@ -10,7 +11,7 @@ export interface PlayerType {
   };
 }
 
-export function Player({ name, position }: PlayerType) {
+export function Player({ name, position }: Player) {
   //logica para o jogador
 
 
