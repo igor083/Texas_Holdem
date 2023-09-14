@@ -2,26 +2,51 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import { Player, Room } from "./src/types/Types";
+import { Player, Room, PlayerState } from "./src/types/Types";
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(
-  httpServer, 
+  httpServer,
   {cors: { origin: "*" }}
 );
 
 const rooms: Room[] = [
   {
-    id: "serv112121221",
+    id: "server1",
     name: "server 1",
+    players: [],
+    ownerId: "1",
+    gameStarted: false
+  },
+  {
+    id: "server2",
+    name: "server 2",
     players: [],
     ownerId: "1",
     gameStarted: false
   }
 ]
 
-const players: Player[] = []
+function deletePlayer(playerId: string) {
+  for (const room of rooms) {
+    for (const i in room.players) {
+      if (room.players[Number(i)].id === playerId) {
+        room.players.splice(Number(i), 1);
+      }
+    }
+  }
+}
+
+function getRoomByPlayerId(playerId: string) {
+  for (const room of rooms) {
+    for (const player of room.players) {
+      if (player.id === playerId) {
+        return room;
+      }
+    }
+  }
+}
 
 
 app.use(cors({
@@ -30,34 +55,45 @@ app.use(cors({
 
 io.on("connection", socket => {
   console.log("Conected!");
-  
-  socket.on("enter-room", (roomId, callback) => {
-    for (let i = 0; i < rooms.length; i++) {
-      if (rooms[i].id === roomId) {        
-        const player = players.find(p => p.id === socket.id);
 
-        if (player) {
+  socket.on("disconnect", () => {
+    const room = getRoomByPlayerId(socket.id);    
+    deletePlayer(socket.id);
 
-          if (rooms[i].players.length === 0)
-            rooms[i].ownerId = player.id;
-
-          socket.join(roomId);
-          io.to(roomId).emit("new-player", player);
-          rooms[i].players.push(player);
-        }
-      }
+    if (room) {
+      io.to(room.id).emit("update-players", room.players);
     }
-
-    callback(rooms);
   });
 
+  socket.on("new-player", (playerState: PlayerState) => {
+    console.log("[new player]", playerState);
 
-  socket.on("new-player", (player: Player) => {
-    players.push(player);
-  });
+    rooms.forEach(room => {
+      // alterar no array original
+      if (room.id === playerState.roomId) {
+        if (room.players.length === 0) room.ownerId = socket.id;
+
+        room.players.push({
+          id: socket.id,
+          name: playerState.name,
+          profilePictureIndex: playerState.profilePictureIndex
+        });
+
+        socket.join(room.id);
+
+        socket.broadcast.to(room.id).emit("update-players", room.players);
+        socket.emit("initial-data", room);
+      }
+    })
+
+  })
 });
 
-app.get("/get-rooms", (request, response) => {
+
+
+// Routes
+
+app.get("/rooms", (request, response) => {
   try {
     return response.json(rooms);
 

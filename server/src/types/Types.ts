@@ -11,4 +11,12 @@ export interface Room {
 export interface Player {
   id: string;
   name: string;
+  profilePictureIndex: number;
+}
+
+
+export interface PlayerState {
+  name: string;
+  profilePictureIndex: number;
+  roomId: string;
 }
