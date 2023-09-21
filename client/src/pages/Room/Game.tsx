@@ -79,7 +79,6 @@ export function Game() {
       setCurrentTime(newTime);
     });
 
-
   }, []);
 
   function handlePlay(newStatus: PlayType) {

@@ -20,10 +20,12 @@ export interface Player {
   isAi: boolean;
   hand: Hand;
   money: number;
-  played: PlayType;
+  playType: PlayType;
   quit: boolean;
   currentBet: number;
   disconnected: boolean;
+
+  played: boolean;
 }
 
 export type PlayType = "check" | "pay" |  "increased" | "all-in" | "quit" | null;

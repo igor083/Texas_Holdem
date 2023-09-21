@@ -73,10 +73,11 @@ io.on("connection", socket => {
       profilePictureIndex: newPlayerData.profilePictureIndex,
       isAi: false,
       hand: generateCardHand(),
-      currentBet: -1,
+      currentBet: 0,
       disconnected: false,
       quit: false,
-      played: null
+      played: false,
+      playType: null
     }
 
     game.readOnlyPlayers.push(newPlayer);
@@ -90,8 +91,9 @@ io.on("connection", socket => {
 
   socket.on("receive-play", (newStatus: PlayType, betValue?: number) => {
     if (newStatus === "pay") {
-      bet(game.playerTurnIndex, game.minBet);
-      game.players[game.playerTurnIndex].played = newStatus;
+      bet(game.playerTurnIndex, game.minBet, newStatus);
+      game.players[game.playerTurnIndex].playType = newStatus;
+      game.players[game.playerTurnIndex].played = true;
     }
 
     else if (newStatus === "check") {
@@ -99,9 +101,9 @@ io.on("connection", socket => {
     }
 
     else if (newStatus === "increased" && betValue) {
-      bet(game.playerTurnIndex, betValue);
-      game.players = game.players.map((p, i) => ({...p, played: i === game.playerTurnIndex ? "increased" : null}));
-      game.minBet = betValue
+      bet(game.playerTurnIndex, betValue, newStatus);
+      game.players = game.players.map((p, i) => ({ ...p, played: i === game.playerTurnIndex ? "increased" : null }));
+      game.minBet = betValue;
     }
 
     else if (newStatus === "all-in") {
@@ -142,43 +144,87 @@ function removePlayerBySocketId(socketId: string) {
  * not updated client automatically
  */
 async function nextPlayer() {
-  game.playerTurnIndex = game.playerTurnIndex == -1
+  let isCompleteBettingRound = true;
+
+  for (let i = 0; i < game.players.length; i++) {
+    const currentLoopPlayer = game.players[i];
+
+    if (currentLoopPlayer.currentBet < game.minBet && !currentLoopPlayer.disconnected) {
+      isCompleteBettingRound = false;
+      break;
+    }
+  }
+
+  if (!isCompleteBettingRound) {
+    game.playerTurnIndex = game.playerTurnIndex == -1
     ? getOneLessIndexByReference(game.bigBlindIndex)
     : getOneLessIndexByReference(game.playerTurnIndex)
 
-  io.emit("update-game", game);
+    io.emit("update-game", game);
 
-  const oldStatus = game.players[game.playerTurnIndex].played;
-  let limitTime = 10;
-
-  const time = setInterval(() => {
-    console.log("[time]: ", limitTime);
-    limitTime--;
-    io.emit("update-limit-time", limitTime);
-
-    if (oldStatus !== game.players[game.playerTurnIndex].played) {
-      console.log("Jogoooouu");
-      nextPlayer();
-      clearInterval(time);
+    const oldStatus = game.players[game.playerTurnIndex].played;
+    let limitTime = 10;
+  
+    const time = setInterval(() => {
+      limitTime--;
+      io.emit("update-limit-time", limitTime);
+  
+      if (oldStatus !== game.players[game.playerTurnIndex].played) {
+        console.log("Jogoooouu");
+        nextPlayer();
+        clearInterval(time);
+      }
+  
+      else if (limitTime <= 0) {
+        // consider that the player has been disconnected
+        clearInterval(time);
+        console.log("desconectado");
+        game.players = game.players.map((p, i) => i === game.playerTurnIndex ? {...p, disconnected: true} : p);
+        nextPlayer();
+      }
+    }, 1000);
+  
+  
+    // -=-=-=-=-=| por enquanto |=-=-=-=-
+    if (game.players[game.playerTurnIndex].isAi) {
+      console.log("------------------------------")
+      console.log("A IA vai jogar...");
+      await sleep(1000);
+      AIPlay();
+      // nextPlayer();
     }
-
-    else if (limitTime <= 0) {
-      // consider that the player has been disconnected
-      clearInterval(time);
-      console.log("desconectado");
-      game.players.map((p, i) => i === game.playerTurnIndex ? {...p, disconnected: true} : p);
-    }
-
-  }, 1000);
-
-
-  // -=-=-=-=-=| por enquanto |=-=-=-=-
-  if (game.players[game.playerTurnIndex].isAi) {
-    await sleep(1000);
-    console.log("vai jogar agora");
-    AIPlay();
-    // nextPlayer();
+  } else {
+    console.log("não entrei, pois: ", game.players)
+    turnCommunityCards();
   }
+  
+}
+
+
+function turnCommunityCards() {
+  const countTurnedCards = game.communityCards.filter(c => c.turned).length;
+  game.players = game.players.map(p => ({...p, played: null}));
+
+  if (countTurnedCards === 0) {
+    game.communityCards = game.communityCards.map((card, i) => i < 3 ? ({...card, turned: true}) : card);
+    nextPlayer();
+  } 
+  
+  else if (countTurnedCards === 3 || countTurnedCards === 4) {
+    game.communityCards = game.communityCards.map((card, i) => 
+      i < (countTurnedCards - 1) 
+      ? ({...card, turned: true}) 
+      : card
+    );
+
+    nextPlayer();
+  }
+
+  else {
+    console.log("fim do jogo")
+  }
+
+  io.emit("update-game", game);
 }
 
 /**
@@ -216,23 +262,28 @@ function updateDealerBigSmall() {
   game.smallBlindIndex = getOneLessIndexByReference(game.dealerIndex);
   game.bigBlindIndex = getOneLessIndexByReference(game.smallBlindIndex);
 
-  bet(game.smallBlindIndex, game.minBet/2);
-  bet(game.bigBlindIndex, game.minBet);
+  bet(game.smallBlindIndex, game.minBet, "pay");
+  bet(game.bigBlindIndex, game.minBet, "pay");
 }
 
 /**
- * not updated client automatically
+ * Not updated client automatically
  */
-function bet(playerIndex: number, betValue: number) {
+function bet(playerIndex: number, betValue: number, newStatus: "pay" | "increased") {
   console.log(game.players[playerIndex].name, " apostou ", betValue);
+
+  // const newBetValue = newStatus === "increased" 
+  //   ? betValue
+  //   : 
+  
   game.players[playerIndex].currentBet = betValue;
   game.players[playerIndex].money -= betValue;
+  game.players[playerIndex].played = newStatus;
 }
 
 
 function AIPlay() {
-  game.players[game.playerTurnIndex].played = "pay";
-  bet(game.playerTurnIndex, game.minBet);
+  bet(game.playerTurnIndex, game.minBet, "pay");
 
   io.emit("update-game", game);
 }
