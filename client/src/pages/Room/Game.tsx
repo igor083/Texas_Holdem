@@ -1,78 +1,113 @@
-import { io } from "socket.io-client";
-import { Player, PlayerType } from "../../components/Player";
-import { useEffect, useState } from "react";
+import { Socket, io } from "socket.io-client";
+import { PlayType, Player, PlayerType } from "../../components/Player";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ClientFormData } from "../Home";
 import { getPos } from "./helper";
-import { Button } from "antd";
+import { Button, InputNumber } from "antd";
 
+interface ComunityCard {
+  naipe: number;
+  value: number;
+  turned: boolean;
+}
 
 interface GameType {
+  currentPlayerIndex: number;
+
+  minBet: number;
   dealerIndex: number;
   smallBlindIndex: number;
   bigBlindIndex: number;
-  playerTurnId: "",
+  playerTurnIndex: number,
   players: PlayerType[],
   readOnlyPlayers: PlayerType[];
+
   moneyPots: {
     playersIds: string[];
     betAmount: number;
-  }[]
+  }[],
+
+  communityCards: ComunityCard[],
 }
 
 export function Game() {
   const {state: clienteFormData}: {state: ClientFormData} = useLocation();
   const [game, setGame] = useState<GameType>({
-    dealerIndex: 0,
-    smallBlindIndex: 7,
-    bigBlindIndex: 6,
+    minBet: 200,
+    currentPlayerIndex: -1,
+    dealerIndex: -1,
+    smallBlindIndex: -1,
+    bigBlindIndex: -1,
+    playerTurnIndex: -1,
     players: [],
     readOnlyPlayers: [],
-    playerTurnId: "",
     moneyPots: [],
+    communityCards: [],
   });
+  const [currentTime, setCurrentTime] = useState(10);
+  const socketRef = useRef<Socket>();
+  const [betValue, setBetValue] = useState(game.minBet);
 
-  function updateGame(newGameData: GameType) {
-    console.log("func [updateGame]: ", newGameData);
+  function updateGame(newGameData: GameType, socketId: string) {
 
-    setGame(newGameData);
-  }
+    const newData: GameType = {
+      ...newGameData,
+      currentPlayerIndex: newGameData.players.concat(newGameData.readOnlyPlayers).findIndex(p => p.id === socketId)
+    }
 
-  function newReadOnlyPlayer(newPlayer: PlayerType) {
-    console.log("func [updateReadOnlyPlayers]: ", newPlayer);
-
-    setGame(prevState => ({
-      ...prevState, 
-      readOnlyPlayers: [...prevState.readOnlyPlayers, newPlayer]
-    }));
+    console.log("func [updateGame]: ", newData);
+    setGame(newData);
   }
 
   useEffect(() => {
     const socket = io("http://localhost:8080");
 
+    socketRef.current = socket;
+
     socket.on("connect", () => {
       console.log("connected!");
 
-      socket.emit("new-player", clienteFormData, (initialGameData: GameType) => {
-        if (initialGameData) updateGame(initialGameData);
-      });
+      socket.emit("new-player", clienteFormData);
     });
 
     socket.on("update-game", (newGameData: GameType) => {
-      console.log("sock [update-game]:", newGameData)
-      updateGame(newGameData);
+      updateGame(newGameData, socket.id);
     });
 
-    socket.on("new-player", (newPlayer: PlayerType) => {
-      newReadOnlyPlayer(newPlayer);
+    socket.on("update-limit-time", (newTime: number) => {  
+      setCurrentTime(newTime);
     });
+
 
   }, []);
+
+  function handlePlay(newStatus: PlayType) {
+    if (newStatus === "pay") {
+      socketRef.current?.emit("receive-play", "pay");
+    } 
+    
+    else if (newStatus === "check") {
+      //
+    }
+
+    else if (newStatus === "increased") {
+      socketRef.current?.emit("receive-play", "increased", betValue);
+    }
+
+    else if (newStatus === "all-in") {
+      //
+    } 
+
+    else if (newStatus === "quit") {
+      //
+    }
+  }
 
 
   return (
     <div className="w-[100%] h-[100%] justify-center items-center flex">
-      <div className="relative border w-[90%] h-min max-w-[1000px]">
+      <div className="relative  w-[90%] h-min max-w-[1000px]">
         <img src={"/images/table.png"} className="w-[100%]" />
 
         {
@@ -90,19 +125,60 @@ export function Game() {
         {
           game.players.map((player, i) =>
             <Player
+              {...player}
               key={player.id}
               profilePictureIndex={player.isAi ? 7 : player.profilePictureIndex}
-              name={game.dealerIndex === i ? "dealer" : game.bigBlindIndex === i ? "big-blinder" : game.smallBlindIndex === i ? "small blind" : String(i)}
-              id={player.id}
-              isAi={player.isAi}
+              // name={
+              //   player.name+"; "+(game.dealerIndex === i ? "[DEALER]; " : game.bigBlindIndex === i ? "[BIG]; " : game.smallBlindIndex === i ? "[SMALL]; " : "")
+              //   + ("pos: "+i+"; ")
+              //   + (game.playerTurnIndex === i ? "VEZ DE; "+"time: "+currentTime+"; " : "")
+              // }
+              name={player.name}
               style={{...getPos(i)}}
-              hand={player.hand}
-              money={player.money}
+              isDealer={game.dealerIndex === i}
+              isTurn={game.playerTurnIndex === i}
+              count={game.playerTurnIndex === i ? currentTime : undefined}
             />
           )
         }
 
-        <Button className="absolute -bottom-10" onClick={() => fetch("http://localhost:8080/test")}>Restart</Button>
+        <Button className="absolute -bottom-10" onClick={() => fetch("http://localhost:8080/restart")}>Restart</Button>
+        <Button className="absolute -bottom-10 left-20" onClick={() => fetch("http://localhost:8080/next-turn")}>Proximo jogador</Button>
+
+        {
+          // game.playerTurnIndex === game.currentPlayerIndex && (
+          game.playerTurnIndex === game.currentPlayerIndex && (
+            <div className="absolute flex gap-2 right-0 -bottom-[50px]">
+              <InputNumber 
+                placeholder="Valor da aposta" 
+                type={"number"} 
+                value={betValue}
+                onChange={value => setBetValue(Number(value))} 
+              />
+              <Button onClick={() => handlePlay("pay")}>Pagar</Button>
+              <Button onClick={() => handlePlay("increased")}>Aumentar</Button>
+              <Button onClick={() => handlePlay("check")}>Passar</Button>
+              <Button onClick={() => handlePlay("quit")}>Desistir</Button>
+            </div>
+          )
+        }
+
+        <div className="border w-full h-full">
+          {
+
+            game.communityCards.map((card, i) =>
+              <img 
+                key={i}
+                className={`
+                  absolute top-[60%] translate-y-[-100%]
+                  w-28
+                `} 
+                style={{ left: `${(i+1)*15}%` }}
+                src={card.turned ? `/all-cards/${card.value}_${card.naipe}.png` : "/images/back-one-card.png"} 
+              />
+            )
+          }
+        </div>
       </div>
     </div>
   );

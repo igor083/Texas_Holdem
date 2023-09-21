@@ -5,11 +5,18 @@ export function getRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function generateCardHand(): Hand {
+export function generateCardHand(): Hand {
   return [
     {value: getRandomNumber(2, 14), naipe: getRandomNumber(1, 4)},
     {value: getRandomNumber(2, 14), naipe: getRandomNumber(1, 4)}
   ]
+}
+
+export function generateCard() {
+  return {
+    value: getRandomNumber(2, 14), 
+    naipe: getRandomNumber(1, 4)
+  }
 }
 
 export function generateAIPlayer(): Player {
@@ -19,6 +26,10 @@ export function generateAIPlayer(): Player {
     money: 20000,
     name: "AI "+uuid().slice(0, 5),
     profilePictureIndex: 3,
-    hand: generateCardHand()
+    hand: generateCardHand(),
+    currentBet: -1,
+    disconnected: false,
+    played: null,
+    quit: false
   }
 }

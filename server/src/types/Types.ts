@@ -17,10 +17,16 @@ export interface Player {
   id: string;
   name: string;
   profilePictureIndex: number;
-  money: number;
   isAi: boolean;
-  hand?: Hand;
+  hand: Hand;
+  money: number;
+  played: PlayType;
+  quit: boolean;
+  currentBet: number;
+  disconnected: boolean;
 }
+
+export type PlayType = "check" | "pay" |  "increased" | "all-in" | "quit" | null;
 
 export interface ClientFormData {
   name: string;
