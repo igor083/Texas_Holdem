@@ -1,0 +1,22 @@
+body {
+  background: #12141d;
+  background-image: radial-gradient(#12141d 60%, #313c45 100%);
+}
+
+#root {
+  /* opacity: 0; */
+}
+
+
+@media (max-width: 1200px) {
+  html {
+    font-size: 90%;
+  }
+}
+
+@media (max-width: 600px) {
+    html {
+      font-size: 80%;
+    }
+  }
+  
