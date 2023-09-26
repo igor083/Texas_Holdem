@@ -69,16 +69,16 @@ const Poker = () => {
 
       if (user)
         setPopupInfo({
-          heading: "You won!",
-          text: "Congratulations! You have managed to defeat all of your opponents. Would you like to try again?",
+          heading: "Você ganhou!",
+          text: "Parabens! Você derrotou todas as IAs, deseja jogar novamente?",
           imageUrl: `${process.env.PUBLIC_URL}/assets/crown.svg`,
           imageAlt: "Crown",
           didPlayerWin: true,
         });
       else
         setPopupInfo({
-          heading: "You lost!",
-          text: "What a shame! You have unfortunately been eliminated. Would you like to try again?",
+          heading: "Você perdeu!",
+          text: "Quer jogar novamente?",
           imageUrl: `${process.env.PUBLIC_URL}/assets/broken-heart.svg`,
           imageAlt: "Crown",
           didPlayerWin: false,
