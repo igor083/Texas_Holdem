@@ -89,7 +89,8 @@
 }
 
 .blind {
-  color: #26ae60;
+  color: white;
+  z-index: 99;
 }
 
 @media (max-width: 1200px) {
